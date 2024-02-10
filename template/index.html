@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookstore</title>
+    <style>
+        /* Simple CSS for layout */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .search-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .view_cartBtn{
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 7px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            position:absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .book-details {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .book-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .book-item a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .add-to-cart-btn {
+            padding: 5px 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .logout_Btn{
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 7px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            position:absolute;
+            top: 5px;
+            right: 125px;
+        }
+        .login_Btn{
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 7px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            position:absolute;
+            top: 5px;
+            right: 5px;
+        }
+
+    </style>
+   
+    {% if user.is_authenticated %}
+    <a href="{% url 'view-cart' %}" ><button class="view_cartBtn">View Cart</button></a>
+    <a href="{% url 'logout' %}"><button class="logout_Btn">Logout</button></a>
+    {% else %}
+    <a href="{% url 'login' %}"><button class="login_Btn">Login</button></a>
+    {% endif %}
+   
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Bookstore</h1>
+        
+        <!-- Search Form -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search books...">
+            <button onclick="searchBooks()">Search</button>
+        </div>
+        
+        <!-- Search Results -->
+        <div id="searchResults"></div>
+        
+        <!-- Book Details -->
+        <div id="bookDetails" class="book-details" style="display: none;">
+            <h2>Book Details</h2>
+            <div id="bookDetailsContent"></div>
+        </div>
+    </div>
+    <div class="recommended-books">
+        <h2>Recommended Books</h2>
+        <div class="book-list">
+            <!-- Display random books -->
+            {% for book in random_books %}
+            <div class="book-item">
+                <h3>{{ book.title }}</h3>
+                <p>Author: {{ book.author }}</p>
+                <p>Price: {{ book.price }} $</p>
+                <p>Genre: {{book.genre}}</p>
+                <p>Condition: {{book.condition}}</p>
+                <p>Stock Quantity: {{book.stock_quantity}}</p>
+                <button onclick="addToCart('{{ book.id }}')">Add to Cart</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- JavaScript for search and book details -->
+    <script>
+        function showBookDetails(bookId) {
+            // Retrieve book details using AJAX
+            fetch(`/book-details/${bookId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const bookDetailsDiv = document.getElementById('bookDetails');
+                    const bookDetailsContentDiv = document.getElementById('bookDetailsContent');
+                    bookDetailsContentDiv.innerHTML = `<p>Title: ${data.title}</p><p>Author: ${data.author}</p><p>Price: ${data.price}</p>`;
+                    bookDetailsDiv.style.display = 'block';
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    
+        function displaySearchResults(data) {
+            var searchResultsContainer = document.getElementById('searchResults');
+            searchResultsContainer.innerHTML = ''; // Clear previous results
+
+            var searchResults = JSON.parse(data.search_results);
+            searchResults.forEach(function(book) {
+                var bookHTML = `
+                    <div class="book">
+                        <h3>${book.fields.title}</h3>
+                        <p>Author: ${book.fields.author}</p>
+                        <p>Price: ${book.fields.price} $</p>
+                        <p>Genre: ${book.fields.genre}</p>
+                        <p>Condition: ${book.fields.condition}</p>
+                        <p>Stock Quantity: ${book.fields.stock_quantity}</p>
+                        <button onclick="addToCart(${book.pk})">Add to Cart</button>
+                        <!-- Add more details as needed -->
+                    </div>
+                `;
+                searchResultsContainer.innerHTML += bookHTML;
+            });
+}
+
+// AJAX request to fetch search results
+        function searchBooks() {
+            var query = document.getElementById('searchInput').value;
+            
+            fetch(`/search-books/?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    displaySearchResults(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function getCookie(name) {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if the cookie starts with the name we're looking for
+                if (cookie.startsWith(name + '=')) {
+                    // Return the value of the cookie
+                    return cookie.substring(name.length + 1);
+                }
+            }
+            // Return null if the cookie is not found
+            return null;
+        }
+
+function addToCart(bookId) {
+    fetch(`/add-to-cart/${bookId}/`, {
+        method: 'POST',
+        credentials: 'same-origin', // Include cookies in the request
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Include CSRF token for POST requests
+        },
+        body: JSON.stringify({
+            book_id: bookId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            // Book added to cart successfully, you can update the UI as needed
+            console.log(data.message);
+            // You can update the UI or display a message to the user
+            // For example, show a success message to the user
+            alert(data.message);
+        } else {
+            console.error('Failed to add book to cart');
+            // Display an error message to the user
+            alert('Failed to add book to cart');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+    </script>
+</body>
+</html>

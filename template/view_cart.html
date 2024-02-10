@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Contents</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .cart-item {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+            position: relative; /* To position delete button */
+        }
+        .cart-item p {
+            margin: 5px 0;
+        }
+        .cart-item .book {
+            font-weight: bold;
+        }
+        .cart-item .price {
+            color: #007bff;
+        }
+        .cart-item .quantity {
+            color: #28a745;
+        }
+        .logout_Btn{
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 7px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            position:absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .purchaseBtn {
+            background-color: #dcd935;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .update-btn {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 5px; /* Add margin to separate buttons */
+    }
+    </style>
+    <a href="{% url 'logout' %}"><button class="logout_Btn">Logout</button></a>
+</head>
+<body>
+    <h1>Cart Contents</h1>
+    <!-- Display cart contents here -->
+    {% for item in cart.items.all %}
+    <div class="cart-item" id="item_{{ item.id }}">
+        <p class="book">{{ item.book }}</p>
+        <p class="book">Author: {{ item.book.author }}</p>
+        <p class="book">Genre: {{ item.book.genre }}</p>
+        <p class="price">Price: {{ item.book.price }}</p>
+        <input type="number" id="quantity_{{ item.id }}" min="1" max="{{ item.book.stock_quantity }}" value="{{ item.quantity }}">
+        <button class="update-btn" onclick="updateQuantity('{{ item.id }}')">Update</button>
+        <button class="delete-btn" onclick="deleteItem('{{ item.id }}')">Delete</button>
+    </div>
+{% endfor %}
+
+    <p>Total Price: $<span id="total_price">{{ total_price }}</span></p>
+    <button id="purchaseButton" class="purchaseBtn" onclick="purchaseItems()">Purchase</button>
+
+
+    <!-- CSRF Token -->
+    <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+
+    <script>  
+        function updateQuantity(itemId) {
+            var quantityInput = document.getElementById('quantity_' + itemId);
+            var newQuantity = quantityInput.value;
+            var csrfToken = document.getElementById('csrf_token').value;
+
+            // Perform an AJAX request to update the item quantity in the cart
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/update-cart-item/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // Quantity updated successfully, reload the page to reflect changes
+                        window.location.reload();
+                    } else {
+                        // Handle errors if any
+                        console.error('Error updating quantity:', xhr.responseText);
+                    }
+                }
+            };
+            xhr.send('item_id=' + encodeURIComponent(itemId) + '&quantity=' + encodeURIComponent(newQuantity));
+        }
+
+        function deleteItem(itemId) {
+            var csrfToken = document.getElementById('csrf_token').value;
+            
+            // Perform an AJAX request to delete the item from the cart
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/delete-item-from-cart/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // Item deleted successfully, reload the page to reflect changes
+                        window.location.reload();
+                    } else {
+                        // Handle errors if any
+                        console.error('Error deleting item:', xhr.responseText);
+                    }
+                }
+            };
+            xhr.send('item_id=' + encodeURIComponent(itemId));
+        }
+
+        function purchaseItems() {
+        var csrfToken = document.getElementById('csrf_token').value;
+
+        // Make AJAX request to your Django view to handle the purchase transaction
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/purchase-cart/', true); // Update the URL as per your Django URLs configuration
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    // Purchase successful, display a success message or perform any necessary actions
+                    alert('Purchase successful!');
+                    window.location.reload(); // Reload the page to reflect changes
+                } else {
+                    // Purchase failed, display an error message or handle errors as necessary
+                    alert('Failed to complete the purchase.');
+                }
+            }
+        };
+        xhr.send(); // Send the AJAX request
+    }
+    </script>
+</body>
+</html>

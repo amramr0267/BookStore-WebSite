@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        /* Define your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        h3 {
+            color: #007bff;
+        }
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="submit"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        p.register-link {
+            margin-top: 10px;
+            text-align: center;
+        }
+        p.register-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        p.register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <h1>Login Here!!</h1>
+</head>
+<body>
+    {% for message in messages %}
+    <h3>{{ message }}</h3>
+    {% endfor %}
+
+    <form method="POST" action="{% url 'login' %}"> 
+        {% csrf_token %}
+        <p>Username:</p>
+        <input type="text" name="username"/>
+        <p>Password:</p>
+        <input type="password" name="password"/>
+        <input type="submit" />
+
+        <!-- Add the "Don't have an account?" button -->
+        <p class="register-link">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    </form>
+</body>
+</html>

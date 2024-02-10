@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        /* Define your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        h3 {
+            color: #007bff;
+        }
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="submit"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        p.login-link {
+            margin-top: 10px;
+            text-align: center;
+        }
+        p.login-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        p.login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sign up Here!!</h1>
+
+    {% for message in messages %}
+    <h3>{{ message }}</h3>
+    {% endfor %}
+
+    <form method="POST" action="{% url 'register' %}"> 
+        {% csrf_token %}
+        <p>Username:</p>
+        <input type="text" name="username"/>
+        <p>Email:</p>
+        <input type="email" name="email"/>
+        <p>Password:</p>
+        <input type="password" name="password"/>
+        <p>Repeat Password:</p>
+        <input type="password" name="password2"/> <br>
+        <input type="submit" />
+
+        <!-- Add the "Already have an account?" link -->
+        <p class="login-link">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+    </form>
+</body>
+</html>
